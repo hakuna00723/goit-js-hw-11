@@ -1,9 +1,6 @@
 import axios from 'axios';
-// console.log(axios);
 import Notiflix from 'notiflix';
-// console.log(Notiflix);
 import SimpleLightbox from 'simplelightbox';
-// console.log(SimpleLightbox);
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
 const refs = {
@@ -14,18 +11,11 @@ const refs = {
 };
 
 let page = 1;
-let visiblity = 0;
+let visibleCards = 0;
 
 refs.btnLoadMore.style.display = 'none';
 refs.form.addEventListener('submit', onSearch);
 refs.btnLoadMore.addEventListener('click', onBtnLoadMore);
-
-function onBtnLoadMore() {
-  const name = refs.input.value.trim();
-  page += 1;
-  pixabay(name, page);
-  // refs.btnLoadMore.style.display = 'flex';
-}
 
 function onSearch(evt) {
   evt.preventDefault();
@@ -35,11 +25,20 @@ function onSearch(evt) {
 
   if (name !== '') {
     pixabay(name);
+    refs.btnLoadMore.style.display = 'none';
   } else {
+    refs.btnLoadMore.style.display = 'none';
     return Notiflix.Notify.failure(
       'Sorry, there are no images matching your search query. Please try again.'
     );
   }
+}
+
+function onBtnLoadMore() {
+  const name = refs.input.value.trim();
+  page += 1;
+  pixabay(name, page);
+  refs.btnLoadMore.style.display = 'flex';
 }
 
 async function pixabay(name, page) {
@@ -59,11 +58,11 @@ async function pixabay(name, page) {
 
   try {
     const response = await axios.get(API_URL, options);
-    visiblity += response.data.hits.length;
+    visibleCards += response.data.hits.length;
 
     notification(
       response.data.hits.length,
-      visiblity,
+      visibleCards,
       options.params.per_page,
       response.data.total
     );
@@ -114,17 +113,20 @@ const simpleLightBox = new SimpleLightbox('.gallery a', {
   captionDelay: 250,
 });
 
-function notification(length, visiblity, per_page, totalHits) {
-  if (!length) {
+function notification(length, visibleCards, per_page, totalHits) {
+  if (length === 0) {
     Notiflix.Notify.failure(
       'Sorry, there are no images matching your search query. Please try again.'
     );
+    return;
   }
-  if ((length = visiblity)) {
+
+  if (page === 1) {
     refs.btnLoadMore.style.display = 'flex';
     Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
   }
-  if (visiblity > totalHits) {
+
+  if (length < 40) {
     refs.btnLoadMore.style.display = 'none';
     Notiflix.Notify.info(
       "We're sorry, but you've reached the end of search results."
