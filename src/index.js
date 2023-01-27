@@ -19,6 +19,7 @@ refs.btnLoadMore.addEventListener('click', onBtnLoadMore);
 
 function onSearch(evt) {
   evt.preventDefault();
+  page = 1;
   refs.gallery.innerHTML = '';
 
   const name = refs.input.value.trim();
